@@ -16,23 +16,40 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/dishes", async (DishesDbContext db) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    return await db.Dishes.ToListAsync();
 });
+
+app.MapGet("/dishes/{dishId:guid}", async (DishesDbContext db, Guid dishId) =>
+{
+    var dish = await db.Dishes.FirstOrDefaultAsync(d => d.Id == dishId);
+    return dish is not null ? Results.Ok(dish) : Results.NotFound();
+
+});
+
+app.MapGet("/dishes/{dishName}", async (DishesDbContext db, string dishName) =>
+{
+    var dish = await db.Dishes.FirstOrDefaultAsync(d => d.Name == dishName);
+    return dish is not null ? Results.Ok(dish) : Results.NotFound();
+
+});
+
+app.MapGet("/dishes/{dishId}/ingredients", async (DishesDbContext db, Guid dishId) =>
+{
+    return (await db.Dishes
+        .Include(d => d.Ingredients)
+        .FirstOrDefaultAsync(d => d.Id == dishId))?.Ingredients;
+
+});
+
+
+
+
+
+
+
 
 app.Run();
 
