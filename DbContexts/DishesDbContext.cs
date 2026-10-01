@@ -10,9 +10,7 @@ public class DishesDbContext(DbContextOptions<DishesDbContext> options) : DbCont
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var test = new Dish { Name = "Test" };
-
-        _ = modelBuilder.Entity<Ingredient>().HasData(
+       _ = modelBuilder.Entity<Ingredient>().HasData(
             new(Guid.Parse("d28888e9-2ba9-473a-a40f-e38cb54f9b35"), "Beef"),
             new(Guid.Parse("da2fd609-d754-4feb-8acd-c4f9ff13ba96"), "Onion"),
             new(Guid.Parse("c19099ed-94db-44ba-885b-0ad7205d5e40"), "Dark beer"),

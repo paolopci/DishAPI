@@ -1,34 +1,52 @@
+using DishesAPI.DbContexts;
+using DishesAPI.Extensions;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddDbContext<DishesDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DishesDBConnectionString")));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/dishes", async (DishesDbContext db) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var dishes = await db.Dishes.ToListAsync();
+    return Results.Ok(dishes.ToDishDtoList());
+});
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/dishes/{dishId:guid}", async (DishesDbContext db, Guid dishId) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var dish = await db.Dishes
+        .FirstOrDefaultAsync(d => d.Id == dishId);
+
+    return dish is not null
+        ? Results.Ok(dish.ToDishDto())
+        : Results.NotFound();
+});
+
+app.MapGet("/dishes/{dishName}", async (DishesDbContext db, string dishName) =>
+{
+    var dish = await db.Dishes
+        .FirstOrDefaultAsync(d => d.Name == dishName);
+
+    return dish is not null
+        ? Results.Ok(dish.ToDishDto())
+        : Results.NotFound();
+});
+
+app.MapGet("/dishes/{dishId:guid}/ingredients", async (DishesDbContext db, Guid dishId) =>
+{
+    var dish = await db.Dishes
+        .Include(d => d.Ingredients)
+        .FirstOrDefaultAsync(d => d.Id == dishId);
+
+    return dish is not null
+        ? Results.Ok(dish.Ingredients.ToIngredientDtoList(dishId))
+        : Results.NotFound();
 });
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

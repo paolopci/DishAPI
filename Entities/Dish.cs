@@ -14,10 +14,13 @@ public class Dish
 
     public ICollection<Ingredient> Ingredients { get; set; } = [];
 
+
+    // The parameterless constructor is required by EF Core for materialization of the entity.
     public Dish()
     {
     }
 
+    // The constructor with parameters is used to create instances of the entity with required properties.
     [SetsRequiredMembers]
     public Dish(Guid id, string name)
     {

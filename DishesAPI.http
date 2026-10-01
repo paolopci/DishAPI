@@ -1,4 +1,4 @@
-@baseUrl = https://localhost:7024
+ @baseUrl = https://localhost:7024
 @token = YOUR_TOKEN_HERE
 
 ### Get all dishes (requires auth)
