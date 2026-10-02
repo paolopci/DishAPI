@@ -2,6 +2,7 @@ using DishesAPI.DbContexts;
 using DishesAPI.Extensions;
 using DishesAPI.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,7 +51,7 @@ app.MapGet("/dishes/{dishId:guid}", async Task<Results<Ok<DishDto>, NotFound>> (
     return dish is not null
         ? TypedResults.Ok(dish.ToDishDto())
         : TypedResults.NotFound();
-});
+}).WithName("GetDishById");
 
 app.MapGet("/dishes/{dishName}", async Task<Results<Ok<DishDto>, NotFound>> (DishesDbContext db, string dishName) =>
 {
@@ -71,6 +72,13 @@ app.MapGet("/dishes/{dishId:guid}/ingredients", async Task<Results<Ok<IEnumerabl
     return dish is not null
         ? TypedResults.Ok(dish.Ingredients.ToIngredientDtoList(dishId))
         : TypedResults.NotFound();
+});
+
+app.MapPost("/dishes", async (DishesDbContext db,[FromBody] DishForCreationDto DishForCreationDto) =>
+{
+    var newDish = DishForCreationDto.ToDish();
+    db.Add(newDish);
+    await db.SaveChangesAsync();
 });
 
 app.Run();
