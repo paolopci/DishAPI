@@ -1,8 +1,13 @@
 using DishesAPI.DbContexts;
 using DishesAPI.Extensions;
+using DishesAPI.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddDbContext<DishesDbContext>(options =>
     options.UseSqlServer(
@@ -10,43 +15,62 @@ builder.Services.AddDbContext<DishesDbContext>(options =>
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
-
-app.MapGet("/dishes", async (DishesDbContext db) =>
+if (app.Environment.IsDevelopment())
 {
-    var dishes = await db.Dishes.ToListAsync();
-    return Results.Ok(dishes.ToDishDtoList());
+    app.MapOpenApi();
+}
+else
+{
+    // Configure the HTTP request pipeline.
+    app.UseExceptionHandler();
+}
+
+
+app.UseHttpsRedirection();
+app.UseStatusCodePages();
+
+
+app.MapGet("/testerror", () =>
+{
+    throw new NotImplementedException();
 });
 
-app.MapGet("/dishes/{dishId:guid}", async (DishesDbContext db, Guid dishId) =>
+
+app.MapGet("/dishes", async Task<Ok<IEnumerable<DishDto>>> (DishesDbContext db) =>
+{
+    var dishes = await db.Dishes.ToListAsync();
+    return TypedResults.Ok(dishes.ToDishDtoList());
+});
+
+app.MapGet("/dishes/{dishId:guid}", async Task<Results<Ok<DishDto>, NotFound>> (DishesDbContext db, Guid dishId) =>
 {
     var dish = await db.Dishes
         .FirstOrDefaultAsync(d => d.Id == dishId);
 
     return dish is not null
-        ? Results.Ok(dish.ToDishDto())
-        : Results.NotFound();
+        ? TypedResults.Ok(dish.ToDishDto())
+        : TypedResults.NotFound();
 });
 
-app.MapGet("/dishes/{dishName}", async (DishesDbContext db, string dishName) =>
+app.MapGet("/dishes/{dishName}", async Task<Results<Ok<DishDto>, NotFound>> (DishesDbContext db, string dishName) =>
 {
     var dish = await db.Dishes
         .FirstOrDefaultAsync(d => d.Name == dishName);
 
     return dish is not null
-        ? Results.Ok(dish.ToDishDto())
-        : Results.NotFound();
+        ? TypedResults.Ok(dish.ToDishDto())
+        : TypedResults.NotFound();
 });
 
-app.MapGet("/dishes/{dishId:guid}/ingredients", async (DishesDbContext db, Guid dishId) =>
+app.MapGet("/dishes/{dishId:guid}/ingredients", async Task<Results<Ok<IEnumerable<IngredientDto>>, NotFound>> (DishesDbContext db, Guid dishId) =>
 {
     var dish = await db.Dishes
         .Include(d => d.Ingredients)
         .FirstOrDefaultAsync(d => d.Id == dishId);
 
     return dish is not null
-        ? Results.Ok(dish.Ingredients.ToIngredientDtoList(dishId))
-        : Results.NotFound();
+        ? TypedResults.Ok(dish.Ingredients.ToIngredientDtoList(dishId))
+        : TypedResults.NotFound();
 });
 
 app.Run();

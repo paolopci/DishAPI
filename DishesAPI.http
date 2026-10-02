@@ -66,3 +66,8 @@ Authorization: Bearer {{token}}
 
 {}
 
+
+### Test Error
+GET {{baseUrl}}/testerror
+
+
