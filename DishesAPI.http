@@ -39,7 +39,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "Rendang (updated)"
+    "name": "Rendang (updated!!!!)"
 }
 
 ### Delete a dish (Fish Masala) (requires RequireAdminFromBelgium policy)
