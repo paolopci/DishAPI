@@ -36,14 +36,19 @@ app.MapGet("/testerror", () =>
     throw new NotImplementedException();
 });
 
+// MapGroup
+var dishesEndPoints = app.MapGroup("/dishes");
+var dishWithGuidIdEndpoints = dishesEndPoints.MapGroup("/{dishId:guid}");
+var ingredientsEndpoints = dishWithGuidIdEndpoints.MapGroup("/ingredients");
 
-app.MapGet("/dishes", async Task<Ok<IEnumerable<DishDto>>> (DishesDbContext db) =>
+
+dishesEndPoints.MapGet("", async Task<Ok<IEnumerable<DishDto>>> (DishesDbContext db) =>
 {
     var dishes = await db.Dishes.ToListAsync();
     return TypedResults.Ok(dishes.ToDishDtoList());
 });
 
-app.MapGet("/dishes/{dishId:guid}", async Task<Results<Ok<DishDto>, NotFound>> (DishesDbContext db, Guid dishId) =>
+dishWithGuidIdEndpoints.MapGet("", async Task<Results<Ok<DishDto>, NotFound>> (DishesDbContext db, Guid dishId) =>
 {
     var dish = await db.Dishes
         .FirstOrDefaultAsync(d => d.Id == dishId);
@@ -53,7 +58,7 @@ app.MapGet("/dishes/{dishId:guid}", async Task<Results<Ok<DishDto>, NotFound>> (
         : TypedResults.NotFound();
 }).WithName("GetDishById");
 
-app.MapGet("/dishes/{dishName}", async Task<Results<Ok<DishDto>, NotFound>> (DishesDbContext db, string dishName) =>
+dishesEndPoints.MapGet("/{dishName}", async Task<Results<Ok<DishDto>, NotFound>> (DishesDbContext db, string dishName) =>
 {
     var dish = await db.Dishes
         .FirstOrDefaultAsync(d => d.Name == dishName);
@@ -63,7 +68,7 @@ app.MapGet("/dishes/{dishName}", async Task<Results<Ok<DishDto>, NotFound>> (Dis
         : TypedResults.NotFound();
 });
 
-app.MapGet("/dishes/{dishId:guid}/ingredients", async Task<Results<Ok<IEnumerable<IngredientDto>>, NotFound>> (DishesDbContext db, Guid dishId) =>
+ingredientsEndpoints.MapGet("", async Task<Results<Ok<IEnumerable<IngredientDto>>, NotFound>> (DishesDbContext db, Guid dishId) =>
 {
     var dish = await db.Dishes
         .Include(d => d.Ingredients)
@@ -74,7 +79,7 @@ app.MapGet("/dishes/{dishId:guid}/ingredients", async Task<Results<Ok<IEnumerabl
         : TypedResults.NotFound();
 });
 
-app.MapPost("/dishes", async Task<CreatedAtRoute<DishDto>> (DishesDbContext db,
+dishesEndPoints.MapPost("", async Task<CreatedAtRoute<DishDto>> (DishesDbContext db,
     [FromBody] DishForCreationDto DishForCreationDto) =>
 {
     var newDish = DishForCreationDto.ToDish();
@@ -90,14 +95,14 @@ app.MapPost("/dishes", async Task<CreatedAtRoute<DishDto>> (DishesDbContext db,
     );
 });
 
-app.MapPut("/dishes/{dishId:guid}", async Task<Results<Ok<DishDto>, NotFound>> (
+dishWithGuidIdEndpoints.MapPut("", async Task<Results<Ok<DishDto>, NotFound>> (
     DishesDbContext db,
     Guid dishId,
     [FromBody] DishForUpdateDto dishToUpdate) =>
 {
     var dish = await db.Dishes.FirstOrDefaultAsync(d => d.Id == dishId);
     if (dish is null)
-    {
+    { 
         return TypedResults.NotFound();
     }
 
@@ -107,7 +112,7 @@ app.MapPut("/dishes/{dishId:guid}", async Task<Results<Ok<DishDto>, NotFound>> (
     return TypedResults.Ok(dish.ToDishDto());
 });
 
-app.MapDelete("/dishes/{dishId:guid}", async Task<Results<NoContent, NotFound>> (
+dishWithGuidIdEndpoints.MapDelete("", async Task<Results<NoContent, NotFound>> (
     DishesDbContext db,
     Guid dishId) =>
 {
