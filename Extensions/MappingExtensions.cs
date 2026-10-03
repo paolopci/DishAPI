@@ -37,11 +37,16 @@ namespace DishesAPI.Extensions
 
         public static Dish ToDish(this DishForCreationDto dishToCreate)
         {
-            Dish newDish=new Dish
+            Dish newDish = new Dish
             {
                 Name = dishToCreate.Name
             };
             return newDish;
+        }
+
+        public static void UpdateFromDto(this Dish dish, DishForUpdateDto dishToUpdate)
+        {
+            dish.Name = dishToUpdate.Name;
         }
     }
 }

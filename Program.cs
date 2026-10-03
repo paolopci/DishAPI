@@ -74,11 +74,55 @@ app.MapGet("/dishes/{dishId:guid}/ingredients", async Task<Results<Ok<IEnumerabl
         : TypedResults.NotFound();
 });
 
-app.MapPost("/dishes", async (DishesDbContext db,[FromBody] DishForCreationDto DishForCreationDto) =>
+app.MapPost("/dishes", async Task<CreatedAtRoute<DishDto>> (DishesDbContext db,
+    [FromBody] DishForCreationDto DishForCreationDto) =>
 {
     var newDish = DishForCreationDto.ToDish();
     db.Add(newDish);
     await db.SaveChangesAsync();
+
+    var dishToReturn = newDish.ToDishDto();
+
+    return TypedResults.CreatedAtRoute(
+        dishToReturn, 
+        "GetDishById",
+        new { dishId = dishToReturn.Id }
+    );
 });
+
+app.MapPut("/dishes/{dishId:guid}", async Task<Results<Ok<DishDto>, NotFound>> (
+    DishesDbContext db,
+    Guid dishId,
+    [FromBody] DishForUpdateDto dishToUpdate) =>
+{
+    var dish = await db.Dishes.FirstOrDefaultAsync(d => d.Id == dishId);
+    if (dish is null)
+    {
+        return TypedResults.NotFound();
+    }
+
+    dish.UpdateFromDto(dishToUpdate);
+    await db.SaveChangesAsync();
+
+    return TypedResults.Ok(dish.ToDishDto());
+});
+
+app.MapDelete("/dishes/{dishId:guid}", async Task<Results<NoContent, NotFound>> (
+    DishesDbContext db,
+    Guid dishId) =>
+{
+    var dish = await db.Dishes.FirstOrDefaultAsync(d => d.Id == dishId);
+    if (dish is null)
+    {
+        return TypedResults.NotFound();
+    }
+
+    db.Dishes.Remove(dish);
+    await db.SaveChangesAsync();
+
+    return TypedResults.NoContent();
+});
+
+
 
 app.Run();
