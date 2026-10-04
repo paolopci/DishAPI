@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
+builder.Services.AddValidation(); 
 
 builder.Services.AddDbContext<DishesDbContext>(options =>
     options.UseSqlServer(
