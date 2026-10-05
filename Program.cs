@@ -11,6 +11,11 @@ builder.Services.AddValidation();
 builder.Services.AddAuthentication().AddJwtBearer();
 builder.Services.AddAuthorization();
 
+builder.Services.AddAuthorizationBuilder().AddPolicy("RequiredAdminFromBelgium", policy =>
+    policy.RequireAuthenticatedUser()
+        .RequireRole("admin")
+        .RequireClaim("country", "Belgium"));
+
 builder.Services.AddDbContext<DishesDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DishesDBConnectionString")));

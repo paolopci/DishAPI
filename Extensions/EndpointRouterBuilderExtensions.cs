@@ -15,9 +15,9 @@ namespace DishesAPI.Extensions
             dishWithGuidIdEndpoints.MapGet("", DishesHandlers.GetDishByIdAsync).WithName("GetDishById");
             // questo endpoint non richiede l'autorizzazione perché ho messo AllowAnonymous()
             dishesEndPoints.MapGet("/{dishName}", DishesHandlers.DishByNameAsync).AllowAnonymous();
-            dishesEndPoints.MapPost("", DishesHandlers.CreateDishAsync);
-            dishWithGuidIdEndpoints.MapPut("", DishesHandlers.UpdateDishAsync);
-            dishWithGuidIdEndpoints.MapDelete("", DishesHandlers.DeleteDishAsync);
+            dishesEndPoints.MapPost("", DishesHandlers.CreateDishAsync).RequireAuthorization("RequiredAdminFromBelgium");
+            dishWithGuidIdEndpoints.MapPut("", DishesHandlers.UpdateDishAsync).RequireAuthorization("RequiredAdminFromBelgium");
+            dishWithGuidIdEndpoints.MapDelete("", DishesHandlers.DeleteDishAsync).RequireAuthorization("RequiredAdminFromBelgium");
         }
 
         public static void RegisterIngredientsEndPoints(this IEndpointRouteBuilder endpointRouteBuilder)
