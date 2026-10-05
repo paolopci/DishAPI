@@ -1,11 +1,11 @@
  @baseUrl = https://localhost:7024
-@token = YOUR_TOKEN_HERE
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IlBhb2xvIiwic3ViIjoiUGFvbG8iLCJqdGkiOiI1ZGJkMWYxIiwicm9sZSI6ImFkbWluIiwiY291bnRyeSI6IkJlbGdpdW0iLCJhdWQiOiJtZW51LWFwaSIsIm5iZiI6MTc5MTIxMTMzNywiZXhwIjoxNzk5MTYwMTM3LCJpYXQiOjE3OTEyMTEzMzksImlzcyI6ImRvdG5ldC11c2VyLWp3dHMifQ.H1q7zisn-qf94oeDdUmkxwoRpEZTQXnTAyBRGiqW5Rg 
 
 ### Get all dishes (requires auth)
 GET {{baseUrl}}/dishes
 Authorization: Bearer {{token}}
 
-### Get all dishes - filter by name (requires auth)
+### Get all dishes - filter by name (requires auth) 
 GET {{baseUrl}}/dishes?name=Mussels
 Authorization: Bearer {{token}}
 
@@ -30,7 +30,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "Hawaiian Pizza"
+    "name": "Hawaiian Pizza...."
 }
 
 ### Update a dish (Rendang) (requires RequireAdminFromBelgium policy)
@@ -39,7 +39,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "Rendang (updated!!)"
+    "name": "Rendang (Update)"
 }
 
 ### Delete a dish (Fish Masala) (requires RequireAdminFromBelgium policy)

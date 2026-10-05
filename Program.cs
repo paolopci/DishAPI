@@ -6,7 +6,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
-builder.Services.AddValidation(); 
+builder.Services.AddValidation();
+
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthorization();
+
+builder.Services.AddAuthorizationBuilder().AddPolicy("RequiredAdminFromBelgium", policy =>
+    policy.RequireAuthenticatedUser()
+        .RequireRole("admin")
+        .RequireClaim("country", "Belgium"));
 
 builder.Services.AddDbContext<DishesDbContext>(options =>
     options.UseSqlServer(
@@ -27,7 +35,9 @@ else
 
 app.UseHttpsRedirection();
 app.UseStatusCodePages();
-
+// autenticazione
+// app.UseAuthentication();
+//app.UseAuthorization();
 
 app.MapGet("/testerror", () =>
 {
