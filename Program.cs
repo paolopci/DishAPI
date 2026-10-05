@@ -1,4 +1,5 @@
 using DishesAPI.DbContexts;
+using DishesAPI.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,26 +34,9 @@ app.MapGet("/testerror", () =>
     throw new NotImplementedException();
 });
 
-// MapGroup
-var dishesEndPoints = app.MapGroup("/dishes");
-var dishWithGuidIdEndpoints = dishesEndPoints.MapGroup("/{dishId:guid}");
-var ingredientsEndpoints = dishWithGuidIdEndpoints.MapGroup("/ingredients");
 
-
-dishesEndPoints.MapGet("");
-
-dishWithGuidIdEndpoints.MapGet("").WithName("GetDishById");
-
-dishesEndPoints.MapGet("/{dishName}");
-
-ingredientsEndpoints.MapGet("");
-
-dishesEndPoints.MapPost("");
-
-dishWithGuidIdEndpoints.MapPut("");
-
-dishWithGuidIdEndpoints.MapDelete("");
-
-
+// chiamo i EndpointRouterBuilderExtensions
+app.RegisterDishesEndPoints();
+app.RegisterIngredientsEndPoints();
 
 app.Run();

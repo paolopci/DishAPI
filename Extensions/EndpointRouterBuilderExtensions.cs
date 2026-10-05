@@ -14,8 +14,15 @@ namespace DishesAPI.Extensions
             dishWithGuidIdEndpoints.MapGet("", DishesHandlers.GetDishByIdAsync).WithName("GetDishById");
             dishesEndPoints.MapGet("/{dishName}", DishesHandlers.DishByNameAsync);
             dishesEndPoints.MapPost("", DishesHandlers.CreateDishAsync);
-            dishesEndPoints.MapPut("", DishesHandlers.UpdateDishAsync);
-            dishesEndPoints.MapDelete("", DishesHandlers.DeleteDishAsync);
+            dishWithGuidIdEndpoints.MapPut("", DishesHandlers.UpdateDishAsync);
+            dishWithGuidIdEndpoints.MapDelete("", DishesHandlers.DeleteDishAsync);
+        }
+
+        public static void RegisterIngredientsEndPoints(this IEndpointRouteBuilder endpointRouteBuilder)
+        {
+            var ingredientsEndPoint = endpointRouteBuilder.MapGroup("dishes/{dishId:guid}/ingredients");
+
+            ingredientsEndPoint.MapGet("", IngredientsHandlers.GetIngredientsAsync);
         }
     }
 }
