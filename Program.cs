@@ -1,14 +1,12 @@
 using DishesAPI.DbContexts;
 using DishesAPI.Extensions;
-using DishesAPI.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
+builder.Services.AddValidation(); 
 
 builder.Services.AddDbContext<DishesDbContext>(options =>
     options.UseSqlServer(
@@ -22,7 +20,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    // Configure the HTTP request pipeline.
+    // Configure the HTTP request pipeline. lo usi in Production
     app.UseExceptionHandler();
 }
 
@@ -36,98 +34,9 @@ app.MapGet("/testerror", () =>
     throw new NotImplementedException();
 });
 
-// MapGroup
-var dishesEndPoints = app.MapGroup("/dishes");
-var dishWithGuidIdEndpoints = dishesEndPoints.MapGroup("/{dishId:guid}");
-var ingredientsEndpoints = dishWithGuidIdEndpoints.MapGroup("/ingredients");
 
-
-dishesEndPoints.MapGet("", async Task<Ok<IEnumerable<DishDto>>> (DishesDbContext db) =>
-{
-    var dishes = await db.Dishes.ToListAsync();
-    return TypedResults.Ok(dishes.ToDishDtoList());
-});
-
-dishWithGuidIdEndpoints.MapGet("", async Task<Results<Ok<DishDto>, NotFound>> (DishesDbContext db, Guid dishId) =>
-{
-    var dish = await db.Dishes
-        .FirstOrDefaultAsync(d => d.Id == dishId);
-
-    return dish is not null
-        ? TypedResults.Ok(dish.ToDishDto())
-        : TypedResults.NotFound();
-}).WithName("GetDishById");
-
-dishesEndPoints.MapGet("/{dishName}", async Task<Results<Ok<DishDto>, NotFound>> (DishesDbContext db, string dishName) =>
-{
-    var dish = await db.Dishes
-        .FirstOrDefaultAsync(d => d.Name == dishName);
-
-    return dish is not null
-        ? TypedResults.Ok(dish.ToDishDto())
-        : TypedResults.NotFound();
-});
-
-ingredientsEndpoints.MapGet("", async Task<Results<Ok<IEnumerable<IngredientDto>>, NotFound>> (DishesDbContext db, Guid dishId) =>
-{
-    var dish = await db.Dishes
-        .Include(d => d.Ingredients)
-        .FirstOrDefaultAsync(d => d.Id == dishId);
-
-    return dish is not null
-        ? TypedResults.Ok(dish.Ingredients.ToIngredientDtoList(dishId))
-        : TypedResults.NotFound();
-});
-
-dishesEndPoints.MapPost("", async Task<CreatedAtRoute<DishDto>> (DishesDbContext db,
-    [FromBody] DishForCreationDto DishForCreationDto) =>
-{
-    var newDish = DishForCreationDto.ToDish();
-    db.Add(newDish);
-    await db.SaveChangesAsync();
-
-    var dishToReturn = newDish.ToDishDto();
-
-    return TypedResults.CreatedAtRoute(
-        dishToReturn, 
-        "GetDishById",
-        new { dishId = dishToReturn.Id }
-    );
-});
-
-dishWithGuidIdEndpoints.MapPut("", async Task<Results<Ok<DishDto>, NotFound>> (
-    DishesDbContext db,
-    Guid dishId,
-    [FromBody] DishForUpdateDto dishToUpdate) =>
-{
-    var dish = await db.Dishes.FirstOrDefaultAsync(d => d.Id == dishId);
-    if (dish is null)
-    { 
-        return TypedResults.NotFound();
-    }
-
-    dish.UpdateFromDto(dishToUpdate);
-    await db.SaveChangesAsync();
-
-    return TypedResults.Ok(dish.ToDishDto());
-});
-
-dishWithGuidIdEndpoints.MapDelete("", async Task<Results<NoContent, NotFound>> (
-    DishesDbContext db,
-    Guid dishId) =>
-{
-    var dish = await db.Dishes.FirstOrDefaultAsync(d => d.Id == dishId);
-    if (dish is null)
-    {
-        return TypedResults.NotFound();
-    }
-
-    db.Dishes.Remove(dish);
-    await db.SaveChangesAsync();
-
-    return TypedResults.NoContent();
-});
-
-
+// chiamo i EndpointRouterBuilderExtensions
+app.RegisterDishesEndPoints();
+app.RegisterIngredientsEndPoints();
 
 app.Run();
