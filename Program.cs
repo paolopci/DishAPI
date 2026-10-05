@@ -20,7 +20,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    // Configure the HTTP request pipeline.
+    // Configure the HTTP request pipeline. lo usi in Production
     app.UseExceptionHandler();
 }
 

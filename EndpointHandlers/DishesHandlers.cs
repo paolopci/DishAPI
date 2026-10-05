@@ -11,8 +11,10 @@ namespace DishesAPI.EndpointHandlers
     public static class DishesHandlers
     {
         public static async Task<Ok<IEnumerable<DishDto>>> GetDishesAsync(DishesDbContext db,
+            ILogger<DishDto> logger,
             ClaimsPrincipal claimsPrincipal, string? name)
         {
+            logger.LogInformation("Getting dishes authenticated: {IsAuthenticated}",claimsPrincipal.Identity?.IsAuthenticated);
             Console.WriteLine($"User authenticated? {claimsPrincipal.Identity?.IsAuthenticated}");
             var dishes = await db.Dishes.ToListAsync();
             return TypedResults.Ok(dishes.ToDishDtoList());
