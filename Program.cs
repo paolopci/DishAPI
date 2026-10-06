@@ -1,6 +1,7 @@
 using DishesAPI.DbContexts;
 using DishesAPI.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +25,11 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    // opeapi/v1.json
     app.MapOpenApi();
+
+    // Configure the HTTP request pipeline. lo usi in Development
+    app.MapScalarApiReference();
 }
 else
 {
